@@ -13,20 +13,22 @@ module Parser =
 
     let pList =
         pstring "[" >>. sepBy basicString (pstring ";") .>> pstring "]" .>> spaces
+    
+    let trim (s:string) = s.Trim ()
 
     let pCountry = 
         pstring "COUNTRY" >>. spaces >>. basicString
-        |>> COUNTRY
+        |>> (trim >> COUNTRY)
 
     let pCountries =
         pstring "COUNTRIES" >>. spaces >>. pList
-        |>> COUNTRIES
+        |>> ((List.map trim) >> COUNTRIES)
 
     let pPlace = (pCountry <|> pCountries)
 
     let pIndicator =
         pstring "INDICATOR" >>. spaces >>. basicString
-        |>> INDICATOR
+        |>> (trim >> INDICATOR)
  
     let pYear = spaces >>. pint32 .>> spaces
 
