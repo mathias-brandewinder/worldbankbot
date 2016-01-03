@@ -55,13 +55,15 @@ module Processor =
         
         printfn "Checking for new mentions"
 
-        let mentions, nextID = pullMentions sinceID
+        let mentions, nextID, delay = pullMentions sinceID
 
         nextID 
         |> Option.iter (Storage.updateLastMentionID)
 
         mentions 
         |> List.iter respondTo
+
+        do! Async.Sleep (delay.TotalMilliseconds |> int)
 
         return! loop (nextID) }
     
