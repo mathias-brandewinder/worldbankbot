@@ -15,14 +15,22 @@ NUGET
       Rx-Linq (>= 2.2.5)
       Rx-Main (>= 2.2.5)
       Rx-PlatformServices (>= 2.2.5)
+    Microsoft.Azure.KeyVault.Core (1.0.0) - framework: >= net40, wpv8.0
     Microsoft.Bcl (1.1.10)
       Microsoft.Bcl.Build (>= 1.0.14)
     Microsoft.Bcl.Build (1.0.21) - import_targets: false
     Microsoft.Bcl.Compression (3.9.85)
       Microsoft.Bcl.Build (>= 1.0.14)
+    Microsoft.Data.Edm (5.7.0) - framework: >= net40, winv4.5, wpv8.1, wpv8.0
+    Microsoft.Data.OData (5.7.0) - framework: >= net40, winv4.5, wpv8.1, wpv8.0
+      Microsoft.Data.Edm (5.7.0)
+      System.Spatial (5.7.0)
+    Microsoft.Data.Services.Client (5.7.0) - framework: >= net40
+      Microsoft.Data.OData (5.7.0)
     Microsoft.Net.Http (2.2.29)
       Microsoft.Bcl (>= 1.1.10)
       Microsoft.Bcl.Build (>= 1.0.14)
+    Newtonsoft.Json (8.0.1) - framework: >= net40, winv4.5, wpv8.1, wpv8.0
     Rx-Core (2.2.5)
       Rx-Interfaces (>= 2.2.5)
     Rx-Interfaces (2.2.5)
@@ -37,5 +45,11 @@ NUGET
     Rx-PlatformServices (2.2.5)
       Rx-Core (>= 2.2.5)
       Rx-Interfaces (>= 2.2.5)
+    System.Spatial (5.7.0) - framework: >= net40, winv4.5, wpv8.1, wpv8.0
     Topshelf (3.3.1)
+    WindowsAzure.Storage (6.2.0)
+      Microsoft.Azure.KeyVault.Core (>= 1.0.0) - framework: >= net40, wpv8.0
+      Microsoft.Data.OData (>= 5.6.4) - framework: >= net40, winv4.5, wpv8.1, wpv8.0
+      Microsoft.Data.Services.Client (>= 5.6.4) - framework: >= net40
+      Newtonsoft.Json (>= 6.0.8) - framework: >= net40, winv4.5, wpv8.1, wpv8.0
     Zlib.Portable (1.11.0) - framework: portable-net40+sl50+wp80+win80

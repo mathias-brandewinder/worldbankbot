@@ -5,3 +5,4 @@ nuget FParsec
 nuget FSharp.Charting
 nuget linqtotwitter
 nuget Topshelf
+nuget WindowsAzure.Storage

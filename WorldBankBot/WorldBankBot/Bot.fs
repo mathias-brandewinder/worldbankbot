@@ -8,6 +8,7 @@ module Processor =
     open System.Text.RegularExpressions
     open Parser
     open Output
+    open Storage
 
     let removeBotHandle text = 
         Regex.Replace(text, "@wbfacts", "", RegexOptions.IgnoreCase)
@@ -20,7 +21,7 @@ module Processor =
     let sendResponse (author:string, statusID:uint64, message:string, mediaID:uint64 option) =
         
         let message = 
-            sprintf "@%s %A" author message
+            sprintf "@%s %s" author message
             |> trimToTweet
 
         match mediaID with
@@ -56,6 +57,9 @@ module Processor =
 
         let mentions, nextID = pullMentions sinceID
 
+        nextID 
+        |> Option.iter (Storage.updateLastMentionID)
+
         mentions 
         |> List.iter respondTo
 
@@ -66,7 +70,9 @@ type Bot () =
     member this.Start () =
         
         printfn "Service starting"
-        Processor.loop None |> Async.Start
+        Storage.readLastMentionID ()
+        |> Processor.loop 
+        |> Async.Start
 
     member this.Stop () =
         printfn "Service stopped"
