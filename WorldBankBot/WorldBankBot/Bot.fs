@@ -45,8 +45,9 @@ module Processor =
             |> extractArguments
         
         match arguments with
-        | None -> sendResponse (author, statusID, "failed to parse your request", None)
-        | Some(args) -> 
+        | Fail(msg) ->
+            sendResponse (author, statusID, "failed to parse your request: " + msg, None)
+        | OK(args) -> 
             let result = createChart args
             let mediaID = result.Chart |> Option.map uploadChart
             sendResponse (author, statusID, result.Description, mediaID)

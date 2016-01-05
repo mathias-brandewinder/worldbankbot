@@ -51,7 +51,11 @@ module Parser =
             (pIndicator .>> (pchar '*' >>. spaces)) 
             pTimeframe
 
+    type Res<'a> =
+        | OK of 'a 
+        | Fail of string
+
     let extractArguments (exp:string) =         
         match (run pArgs exp) with
-        | Success(x,_,_) -> Some(x)
-        | Failure(_) -> None
+        | Success(arg,_,_) -> OK(arg)
+        | Failure(msg,_,_) -> Fail(msg)

@@ -10,16 +10,22 @@ module Storage =
     let apiKey = appSettings.["apiKey"]
 
     let storageConnection = appSettings.["azureStorage"]
-    let containerName = appSettings.["lastmentioncontainer"]
-    let blobName = appSettings.["lastmentionblob"]
+    let lastmentionContainerName = appSettings.["lastmentioncontainer"]
+    let lastmentionBlob = appSettings.["lastmentionblob"]
+    let chartsContainerName = appSettings.["chartscontainer"]
 
-    let container = 
+    let lastmentionContainer = 
         let account = CloudStorageAccount.Parse storageConnection
         let client = account.CreateCloudBlobClient ()
-        client.GetContainerReference containerName
+        client.GetContainerReference lastmentionContainerName
+
+    let chartsContainer = 
+        let account = CloudStorageAccount.Parse storageConnection
+        let client = account.CreateCloudBlobClient ()
+        client.GetContainerReference chartsContainerName
 
     let readLastMentionID () =
-        let lastmention = container.GetBlockBlobReference blobName
+        let lastmention = lastmentionContainer.GetBlockBlobReference lastmentionBlob
         if lastmention.Exists ()
         then 
             lastmention.DownloadText () 
@@ -28,5 +34,5 @@ module Storage =
         else None
 
     let updateLastMentionID (ID:uint64) =
-        let lastmention = container.GetBlockBlobReference blobName
+        let lastmention = lastmentionContainer.GetBlockBlobReference lastmentionBlob
         ID |> string |> lastmention.UploadText

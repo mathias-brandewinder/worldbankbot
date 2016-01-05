@@ -36,7 +36,7 @@ module Output =
     let prepare = lowerCase >> cleanup
 
     // this is very likely terrible, perf-wise
-    let like (target:string) (requested:string) = 
+    let like (requested:string) (target:string) = 
         (prepare target).Contains(prepare requested)
 
     let findCountry (name:string) =
