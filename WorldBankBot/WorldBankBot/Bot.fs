@@ -11,7 +11,18 @@ module Processor =
     open Storage
 
     let removeBotHandle text = 
-        Regex.Replace(text, "@wbfacts", "", RegexOptions.IgnoreCase)
+        Regex.Replace(text, "@worldbankfacts", "", RegexOptions.IgnoreCase)
+
+    let probablyQuery (text:string) =
+        (text.Contains "COUNTR" 
+        || text.Contains "INDICATOR" 
+        || text.Contains "OVER"
+        || text.Contains "IN")
+
+    let (|Query|Mention|) text =
+        if probablyQuery text 
+        then Query
+        else Mention
 
     let trimToTweet (msg:string) =
         if msg.Length > 140 
@@ -39,18 +50,22 @@ module Processor =
 
         let text = status.Text
 
-        let arguments = 
-            text
-            |> removeBotHandle
-            |> extractArguments
+        match text with
+        | Mention -> 
+            sendResponse (author, statusID, "thanks for the attention!", None)
+        | Query ->
+            let arguments = 
+                text
+                |> removeBotHandle
+                |> extractArguments
         
-        match arguments with
-        | Fail(msg) ->
-            sendResponse (author, statusID, "failed to parse your request: " + msg, None)
-        | OK(args) -> 
-            let result = createChart args
-            let mediaID = result.Chart |> Option.map uploadChart
-            sendResponse (author, statusID, result.Description, mediaID)
+            match arguments with
+            | Fail(msg) ->
+                sendResponse (author, statusID, "failed to parse your request: " + msg, None)
+            | OK(args) -> 
+                let result = createChart args
+                let mediaID = result.Chart |> Option.map uploadChart
+                sendResponse (author, statusID, result.Description, mediaID)
         
     let rec loop (sinceID:uint64 Option) = async {
         
