@@ -5,13 +5,18 @@ using System.Text;
 using System.Threading.Tasks;
 using WorldBankBot;
 using Topshelf;
+using NLog;
 
 namespace WorldBankBotService
 {
     class Program
     {
+        private static Logger logger = LogManager.GetCurrentClassLogger();
+
         static void Main(string[] args)
         {
+            logger.Info("Starting WorldBankBot Service");
+
             HostFactory.Run(x =>
             {
                 x.Service<Bot>(service =>

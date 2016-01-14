@@ -6,3 +6,4 @@ nuget FSharp.Charting
 nuget linqtotwitter
 nuget Topshelf
 nuget WindowsAzure.Storage
+nuget NLog.Config

@@ -8,7 +8,7 @@ module Output =
     open FSharp.Charting
 
     let wb = WorldBankData.GetDataContext ()
-
+    
     type WB = WorldBankData.ServiceTypes
     type Country = WB.Country
     type Indicator = Runtime.WorldBank.Indicator
@@ -81,7 +81,7 @@ module Output =
                 |> Option.map (fun (c,i) -> c, i, getValues (year1,year2) i)
             match data with
             | Some(country,indicator,values) -> 
-                let desc = sprintf "%s, %s" country.Name indicator.Name
+                let desc = sprintf "%s, %s (%i-%i)" country.Name indicator.Name year1 year2
                 let chart = column (country,indicator,values)
                 { Description = desc; Chart = chart }
             | None -> { Description = "Failed to retrieve data"; Chart = None }
@@ -98,7 +98,12 @@ module Output =
             | [] -> { Description = "Failed to retrieve data"; Chart = None }
             | _ ->
                 let chart = data |> lines |> Some
-                { Description = indicator; Chart = chart }
+                let countryNames = 
+                    data 
+                    |> List.map (fun (c,_,_) -> c.Name)
+                    |> String.concat ", "
+                let description = sprintf "%s in %s (%i-%i)" indicator countryNames year1 year2
+                { Description = description; Chart = chart }
 
         | COUNTRY(country), INDICATOR(indicator), IN(year) ->             
             let data = 

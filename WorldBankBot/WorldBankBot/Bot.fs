@@ -1,8 +1,11 @@
 ﻿namespace WorldBankBot
 
+open NLog
+
 module Processor =
 
     open System
+    open Core
     open LinqToTwitter
     open Twitter
     open System.Text.RegularExpressions
@@ -10,6 +13,8 @@ module Processor =
     open Output
     open Storage
 
+    let logger = LogManager.GetLogger "Processor"
+    
     let removeBotHandle text = 
         Regex.Replace(text, "@worldbankfacts", "", RegexOptions.IgnoreCase)
 
@@ -23,36 +28,38 @@ module Processor =
         if probablyQuery text 
         then Query
         else Mention
-
-    let trimToTweet (msg:string) =
-        if msg.Length > 140 
-        then msg.Substring(0,134) + " [...]"
-        else msg
-
-    let sendResponse (author:string, statusID:uint64, message:string, mediaID:uint64 option) =
         
-        let message = 
-            sprintf "@%s %s" author message
-            |> trimToTweet
+    let processArguments (args:PLACE*MEASURE*TIMEFRAME) (recipient,statusID) =
+        async {
+            logger.Info "Processing arguments"
+            let result = createChart args
+            let mediaID = 
+                result.Chart 
+                |> Option.map (fun chart -> 
+                    Twitter.mediaUploadAgent.PostAndReply (fun channel -> chart, channel))
 
-        match mediaID with
-        | None ->
-            context.ReplyAsync(statusID, message) 
-            |> ignore
-        | Some(id) ->
-            context.ReplyAsync(statusID, message, [id]) 
-            |> ignore
+            { RecipientName = recipient
+              StatusID = statusID
+              Message = result.Description
+              MediaID = mediaID }
+            |> Twitter.responsesAgent.Post }
 
     let respondTo (status:Status) =
         
-        let author = status.User.ScreenNameResponse
+        let recipient = status.User.ScreenNameResponse
         let statusID = status.StatusID
-
         let text = status.Text
+
+        sprintf "respondTo %s %i %s" recipient statusID text
+        |> logger.Info
 
         match text with
         | Mention -> 
-            sendResponse (author, statusID, "thanks for the attention!", None)
+            { RecipientName = recipient
+              StatusID = statusID
+              Message = "thanks for the attention!"
+              MediaID = None }
+            |> Twitter.responsesAgent.Post
         | Query ->
             let arguments = 
                 text
@@ -61,21 +68,25 @@ module Processor =
         
             match arguments with
             | Fail(msg) ->
-                sendResponse (author, statusID, "failed to parse your request: " + msg, None)
+                { RecipientName = recipient
+                  StatusID = statusID
+                  Message = "failed to parse your request: " + msg
+                  MediaID = None }
+                |> Twitter.responsesAgent.Post
             | OK(args) -> 
-                let result = createChart args
-                let mediaID = result.Chart |> Option.map uploadChart
-                sendResponse (author, statusID, result.Description, mediaID)
+                processArguments args (recipient,statusID)
+                |> Async.Start
+                |> ignore
         
     let rec loop (sinceID:uint64 Option) = async {
         
-        printfn "Checking for new mentions"
+        logger.Info "Checking for new mentions"
 
         let mentions, nextID, delay = pullMentions sinceID
 
         nextID 
         |> Option.iter (Storage.updateLastMentionID)
-
+        
         mentions 
         |> List.iter respondTo
 
@@ -85,12 +96,17 @@ module Processor =
     
 type Bot () =
 
+    let logger = LogManager.GetLogger "Bot"
+
     member this.Start () =
         
-        printfn "Service starting"
+        logger.Info "Service starting"
+
+        Twitter.setDescription ()
+
         Storage.readLastMentionID ()
         |> Processor.loop 
         |> Async.Start
 
     member this.Stop () =
-        printfn "Service stopped"
+        logger.Info "Service stopped"
